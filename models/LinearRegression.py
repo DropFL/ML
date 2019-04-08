@@ -17,10 +17,9 @@ class LinearRegression:
 
         num_batches = math.ceil(len(y) / batch_size)
         concat = np.concatenate((x, y[:, None]), axis=1)
+        final_loss = 0
 
         for e in range(epochs):
-            final_loss = 0
-
             np.random.shuffle(concat)
             
             new_x = concat[:, :self.num_features]
@@ -34,11 +33,13 @@ class LinearRegression:
                 err_y = empir_y - train_y
 
                 dW = np.transpose(train_x).dot(err_y) / batch_size * 2
-                final_loss += (err_y ** 2).mean()
+                if e == epochs - 1:
+                    final_loss += (err_y ** 2).mean() / 2
 
                 self.W = optim.update(self.W, dW, lr)
             
-            final_loss /= num_batches
+        
+        final_loss /= num_batches
         # ============================================================
         return final_loss
 
