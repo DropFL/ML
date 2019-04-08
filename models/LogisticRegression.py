@@ -36,7 +36,8 @@ class LogisticRegression:
                 dW = np.transpose(train_x).dot(err_y) / batch_size * 2
                 
                 if e == epochs - 1:
-                    final_loss -= (train_y * empir_y - np.log(1 + np.exp(empir_y))).mean()
+                    # final_loss -= (train_y * empir_y - np.log(1 + np.exp(empir_y))).mean()
+                    final_loss -= (train_y * np.log(empir_y)).sum()
 
                 self.W = optim.update(self.W, dW, lr)
         final_loss /= num_batches
