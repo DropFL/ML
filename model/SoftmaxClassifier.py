@@ -48,17 +48,18 @@ class SoftmaxClassifier:
             num_batches = math.ceil(len(y) / batch_size)
 
             shuf = np.random.shuffle(np.arange(num_data))
-            new_x = x[shuf]
-            new_y = y[shuf]
+            new_x = x[shuf][0]
+            new_y = y[shuf][0]
             
             for b in range(num_batches):
                 batch_x = new_x[b*batch_size : (b+1)*batch_size]
                 batch_y = new_y[b*batch_size : (b+1)*batch_size]
 
                 prob = self._softmax(batch_x)
+                self.softmax_loss(prob, batch_y)
                 batch_losses.append(self.softmax_loss(prob, batch_y))
                 
-                dW = self.compute_grad(x, self.W, prob, batch_y)
+                dW = self.compute_grad(batch_x, self.W, prob, batch_y)
                 self.W = optimizer.update(self.W, dW, lr)
         # ============================================================
             epoch_loss = sum(batch_losses) / len(batch_losses)  # epoch loss
@@ -108,7 +109,7 @@ class SoftmaxClassifier:
         softmax_loss = 0.0
         # ========================= EDIT HERE ========================
         losses = -np.log(prob)
-        for i in range(len(label)):
+        for i in range(label.shape[0]):
             softmax_loss += losses[i][label[i]]
         # ============================================================
         return softmax_loss
@@ -133,9 +134,10 @@ class SoftmaxClassifier:
         """
         grad_weight = np.zeros_like(weight, dtype=np.float32) # (D, C)
         # ========================= EDIT HERE ========================
-        for i in range(len(label)):
-            prob[label[i]] -= 1
+        for i in range(label.shape[0]):
+            prob[i][label[i]] -= 1
         
+        dot = x.T.dot(prob)
         np.copyto(grad_weight, x.T.dot(prob))
         # ============================================================
         return grad_weight
@@ -154,7 +156,7 @@ class SoftmaxClassifier:
         """
         softmax = None
         # ========================= EDIT HERE ========================
-        softmax = np.dot(x, self.W).exp()
-        softmax /= softmax.sum()
+        softmax = np.exp(np.dot(x, self.W))
+        softmax /= softmax.sum(axis=1)[:, None]
         # ============================================================
         return softmax

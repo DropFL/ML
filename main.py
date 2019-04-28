@@ -9,18 +9,18 @@ np.random.seed(428)
 # 3. Choose Optimizer : SGD / Momentum / RMSProp
 
 # DATA
-DATA_NAME = None
+DATA_NAME = 'Iris'
 
 # HYPERPARAMETERS
-batch_size = None
-num_epochs = None
-learning_rate = None
-epsilon = None
-gamma = None
+batch_size = 10
+num_epochs = 1000
+learning_rate = 0.01
+epsilon = 0.01
+gamma = 0.9
 show_plot = True    # show prediction sample images for DIGIT dataset
 
 # OPTIMIZER
-OPTIMIZER = None
+OPTIMIZER = 'SGD'
 # =============================================================
 assert DATA_NAME in ['Digit', 'Iris']
 assert OPTIMIZER in ['SGD', 'Momentum', 'RMSProp']

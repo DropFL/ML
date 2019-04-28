@@ -1,4 +1,4 @@
-# HW1: Linear / Logistic Regression
+# HW2: Softmax Classification Model
 
 두 번째 과제는 Softmax 기반 분류(Classification) 학습 모델을 [NumPy](http://www.numpy.org/)로 구현하는 것입니다. 전체적인 틀은 이전의 HW1과 같은 형태로 제공됩니다. 그에 따라 본 README에서는 기존 모델과의 차이점 만을 설명합니다.
 
@@ -14,4 +14,4 @@ Softmax 알고리즘의 구현체가 있습니다. 이전의 `*Regression` 클�
 
 `compute_grad(x, weight, prob, label)`는 인자로 전달받은 정보들을 바탕으로 `weight`의 각 feature에 따른 그래디언트 값을 계산합니다. `prob`와 `label`은 `softmax_loss`와 같으며, `x`는 입력된 데이터, `weight`는 현재 가중치를 의미합니다.
 
-위 함수들은 주석으로 문서화되어 있습니다. 각 인자들의 차원과 같은 보다 상세한 정보는 이를 참조하시기 바랍니다.
+위 함수들은 주석으로 문서화되어 있습니다. 각 인자들의 차원 등 상세한 정보는 이를 참조하십시오.
