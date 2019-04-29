@@ -108,9 +108,8 @@ class SoftmaxClassifier:
         """
         softmax_loss = 0.0
         # ========================= EDIT HERE ========================
-        losses = -np.log(prob)
         for i in range(label.shape[0]):
-            softmax_loss += losses[i][label[i]] / label.shape[0]
+            softmax_loss -= np.log(prob[i][label[i]]) / label.shape[0]
         # ============================================================
         return softmax_loss
 
@@ -155,8 +154,8 @@ class SoftmaxClassifier:
         """
         softmax = None
         # ========================= EDIT HERE ========================
-        mat = np.dot(x, self.W)
-        mat -= mat.max()
+        mat = x @ self.W
+        mat -= mat.max(axis=1)[:, None]
         softmax = np.exp(mat)
         softmax /= softmax.sum(axis=1)[:, None]
         # ============================================================
