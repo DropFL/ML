@@ -155,7 +155,9 @@ class SoftmaxClassifier:
         """
         softmax = None
         # ========================= EDIT HERE ========================
-        softmax = np.exp(np.dot(x, self.W))
+        mat = np.dot(x, self.W)
+        mat -= mat.max()
+        softmax = np.exp(mat)
         softmax /= softmax.sum(axis=1)[:, None]
         # ============================================================
         return softmax
