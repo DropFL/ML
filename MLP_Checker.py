@@ -69,19 +69,19 @@ The results should be exactly same as below:
 결과는 아래와 일치해야 합니다:
 
 Forward: 
- [[0.69405863 0.67114958]
- [0.41846232 0.44521992]]
+ [[1.69405863 0.        ]
+ [1.41846232 0.        ]]
 dW: 
- [[ 1. -3.]
- [-3. 10.]
- [-2.  6.]]
+ [[ 1.  0.]
+ [-3.  0.]
+ [-2.  0.]]
 db: 
- [-1.  4.]
+ [-1.  0.]
 """
 
 input_layer = InputLayer(3, 2, ReLU)
-input_layer_w = np.array([[1.0, -2.0], [2.0, -1.0], [-3.5, -0.5]])
-input_layer_b = np.array([1.0, -1.0])
+input_layer.w = np.array([[1.0, -2.0], [2.0, -1.0], [-3.5, -0.5]])
+input_layer.b = np.array([1.0, -1.0])
 temp6 = np.array([[-1, 3, 2], [0.0, 1.0, 0.0]])
 temp7 = np.array([[-1, 3], [0.0, 1.0]])
 print('Forward: \n', input_layer.forward(temp6))
@@ -96,20 +96,20 @@ The results should be exactly same as below:
 결과는 아래와 일치해야 합니다:
 
 Forward: 
- [[0.22614135 0.        ]
- [0.29075415 0.06672439]]
+ [[0.         0.23804324]
+ [0.         1.06672439]]
 Backward: 
- [[-0.6461211  -0.29075415]
- [ 0.96212993  0.06672439]]
+ [[2.8863898  0.20017317]
+ [0.96212993 0.06672439]]
 dW: 
- [[ 1.  0.]
- [-3.  1.]]
+ [[ 0. -3.]
+ [ 0. 10.]]
 db: 
- [-1.  1.]
+ [0. 4.]
 """
 hidden_layer = HiddenLayer(2, 2)
-hidden_layer_w = np.array([[-5.0, -1.25], [0.01, -10.0]])
-hidden_layer_b = np.array([-10, 1.0])
+hidden_layer.w = np.array([[-5.0, -1.25], [0.01, -10.0]])
+hidden_layer.b = np.array([-10, 1.0])
 temp6 = np.array([[-1, 3], [0.0, 1.0]])
 temp7 = np.array([[-1, 3], [0.0, 1.0]])
 print('Forward: \n', hidden_layer.forward(temp6))
