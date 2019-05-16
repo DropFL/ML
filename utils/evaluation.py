@@ -1,88 +1,58 @@
 import numpy as np
 
 def Accuracy(label, pred):
+    Acc = 0.
     ########################################################################################
     # TODO : Complete the code to calculate the accuracy for prediction.
-    #         [Input]
-    #         - label : (N, ), Correct label with 0 (negative) or 1 (positive)
-    #         - hypo  : (N, ), Predicted score between 0 and 1
-    #         [output]
-    #         - Acc : (scalar, float), Computed accuracy score
+    #         you can erase the code. (Acc = 0.)
     # ========================= EDIT HERE =========================
-    Acc = None
-
-
 
     # =============================================================
     return Acc
 
 def Precision(label, pred):
+    precision = 0.
     ########################################################################################
     # TODO : Complete the code to calculate the Precision for prediction.
     #         you should consider that label = 1 is positive. 0 is negative
+    #         you can erase the code. (precision = 0.)
     #         Notice that, if you encounter the divide zero, return 1
-    #         [Input]
-    #         - label : (N, ), Correct label with 0 (negative) or 1 (positive)
-    #         - hypo  : (N, ), Predicted score between 0 and 1
-    #         [output]
-    #         - precision : (scalar, float), Computed precision score
     # ========================= EDIT HERE =========================
-    precision = None
-
-
 
     # =============================================================
     return precision
 
 def Recall(label, pred):
+    recall = 0.
     ########################################################################################
     # TODO : Complete the code to calculate the Recall for prediction.
     #         you should consider that label = 1 is positive. 0 is negative
+    #         you can erase the code. (recall = 0.)
     #         Notice that, if you encounter the divide zero, return 1
-    #         [Input]
-    #         - label : (N, ), Correct label with 0 (negative) or 1 (positive)
-    #         - hypo  : (N, ), Predicted score between 0 and 1
-    #         [output]
-    #         - recall : (scalar, float), Computed recall score
     # ========================= EDIT HERE =========================
-    recall = None
-
-
 
     # =============================================================
     return recall
 
 def F_measure(label, pred):
+    F_score = 0.
     ########################################################################################
     # TODO : Complete the code to calculate the F-measure score for prediction.
     #         you can erase the code. (F_score = 0.)
     #         Notice that, if you encounter the divide zero, return 1
-    #         [Input]
-    #         - label : (N, ), Correct label with 0 (negative) or 1 (positive)
-    #         - hypo  : (N, ), Predicted score between 0 and 1
-    #         [output]
-    #         - F_score : (scalar, float), Computed F-score score
     # ========================= EDIT HERE =========================
-    F_score = None
-
 
     # =============================================================
     return F_score
 
 def MAP(label, hypo, at = 10):
+    Map = 0.
     ########################################################################################
     # TODO : Complete the code to calculate the MAP for prediction.
+    #         you can erase the code. (Map = 0.)
     #         Notice that, hypo is the real value array in (0, 1)
     #         MAP (at = 10) means MAP @10
-    #         [Input]
-    #         - label : (N, K), Correct label with 0 (incorrect) or 1 (correct)
-    #         - hypo  : (N, K), Predicted score between 0 and 1
-    #         - at: (int), # of element to consider from the first. (TOP-@)
-    #         [output]
-    #         - Map : (scalar, float), Computed MAP score
     # ========================= EDIT HERE =========================
-    Map = None
-
 
     # =============================================================
     return Map
@@ -93,44 +63,28 @@ def nDCG(label, hypo, at = 10):
     #         you can erase the code. (dcg, idcg, ndcg = 0.)
     #         Notice that, hypo is the real value array in (0, 1)
     #         nDCG (at = 10 ) means nDCG @10
-    #         [Input]
-    #         - label : (N, K), Correct label with 0 (incorrect) or 1 (correct)
-    #         - hypo  : (N, K), Predicted score between 0 and 1
-    #         - at: (int), # of element to consider from the first. (TOP-@)
-    #         [output]
-    #         - Map : (scalar, float), Computed nDCG score
-
-
     def DCG(label, hypo, at=10):
+        dcg = 0.
         # ========================= EDIT HERE =========================
-        dcg = None
-
-
-
 
         # =============================================================
         return dcg
 
     def IDCG(label, hypo, at=10):
+        idcg = 1.0
         # ========================= EDIT HERE =========================
-        idcg = None
-
-
-
 
         # =============================================================
         return idcg
+    ndcg = 0.
     # ========================= EDIT HERE =========================
-    ndcg = None
 
     # =============================================================
     return ndcg
 
-# =============================================================== #
-# ===================== DO NOT EDIT BELOW ======================= #
-# =============================================================== #
-
 def evaluation_test1(label, pred, at = 10):
+    # pred has values[0,  1]
+
     result = {}
 
     result['Accuracy '] = Accuracy(label, pred)
@@ -141,9 +95,11 @@ def evaluation_test1(label, pred, at = 10):
     return result
 
 def evaluation_test2(label, hypo, at = 10):
+
+    # hypo has values[0 ~ 1]
     result = {}
 
-    result['MAP  @%d'%at] = MAP(label, hypo, at)
+    result['MAP @%d'%at] = MAP(label, hypo, at)
     result['nDCG @%d'%at] = nDCG(label, hypo, at)
 
     return result
