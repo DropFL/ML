@@ -42,10 +42,7 @@ def sign(z):
     """
     sign_z = None
     # =============== EDIT HERE ===============
-
-
-
-
+    sign_z = np.where(z > 0, 1, -1)
     # =========================================
     return sign_z
 
@@ -69,11 +66,7 @@ class Perceptron:
         if len(x.shape) < 2:
             x = np.expand_dims(x, 0)
         # =============== EDIT HERE ===============
-
-
-
-
-
+        out = sign(x @ self.W + self.b)
         # =========================================
         return out
 
@@ -100,11 +93,10 @@ class Perceptron:
 
             for i in range(num_data):
             # =============== EDIT HERE ===============
-                pass
-
-
-
-
+                if self.forward(x[i]) != y[i]:
+                    quit = False
+                    self.W += (learning_rate * y[i] * x[i])[:, None]
+                    self.b += learning_rate * y[i]
             # =========================================
             if quit:
                 break
@@ -136,13 +128,12 @@ class Perceptron:
             quit = True
             for i in range(num_data):
             # =============== EDIT HERE ===============
-                pass
-
-
-
-
-
-
+                if self.forward(x[i]) != y[i]:
+                    quit = False
+                    dW += (learning_rate * y[i] * x[i])[:, None]
+                    db += learning_rate * y[i]
+            self.W += dW
+            self.b += db
             # =========================================
             if quit:
                 break
@@ -186,12 +177,8 @@ class ReLU:
         """
         out = None
         # =============== EDIT HERE ===============
-
-
-
-
-
-
+        self.zero_mask = z < 0
+        out = np.where(self.zero_mask, 0, z)
         # =========================================
         return out
 
@@ -211,11 +198,7 @@ class ReLU:
         """
         dz = None
         # =============== EDIT HERE ===============
-
-
-
-
-
+        dz = np.where(self.zero_mask, 0, d_prev)
         # =========================================
         return dz
 
@@ -241,11 +224,7 @@ class Sigmoid:
         """
         self.out = None
         # =============== EDIT HERE ===============
-
-
-
-
-
+        self.out = 1 / (1 + np.exp(-z))
         # =========================================
         return self.out
 
@@ -264,11 +243,7 @@ class Sigmoid:
         """
         dz = None
         # =============== EDIT HERE ===============
-
-
-
-
-
+        dz = self.out * (1 - self.out) * d_prev
         # =========================================
         return dz
 
@@ -316,11 +291,8 @@ class InputLayer:
         self.x = None
         self.out = None
         # =============== EDIT HERE ===============
-
-
-
-
-
+        self.x = x
+        self.out = self.act.forward(x @ self.W + self.b)
         # =========================================
         return self.out
 
@@ -342,11 +314,6 @@ class InputLayer:
         self.dW = None
         self.db = None
         # =============== EDIT HERE ===============
-
-
-
-
-
 
         # =========================================
 
