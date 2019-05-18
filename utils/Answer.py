@@ -5,14 +5,12 @@ def Accuracy(label, pred):
     # TODO : Complete the code to calculate the accuracy for prediction.
     #         [Input]
     #         - label : (N, ), Correct label with 0 (negative) or 1 (positive)
-    #         - hypo  : (N, ), Predicted score between 0 and 1
+    #         - pred  : (N, ), Predicted score between 0 and 1
     #         [output]
     #         - Acc : (scalar, float), Computed accuracy score
     # ========================= EDIT HERE =========================
-    Acc = None
-
-
-
+    corr = label[label == pred].shape[0]
+    Acc = corr / label.shape[0]
     # =============================================================
     return Acc
 
@@ -23,14 +21,12 @@ def Precision(label, pred):
     #         Notice that, if you encounter the divide zero, return 1
     #         [Input]
     #         - label : (N, ), Correct label with 0 (negative) or 1 (positive)
-    #         - hypo  : (N, ), Predicted score between 0 and 1
+    #         - pred  : (N, ), Predicted score between 0 and 1
     #         [output]
     #         - precision : (scalar, float), Computed precision score
     # ========================= EDIT HERE =========================
-    precision = None
-
-
-
+    filt = label[pred == 1]
+    precision = 1 if filt.shape[0] == 0 else (filt[filt == 1].shape[0] / filt.shape[0]) 
     # =============================================================
     return precision
 
@@ -41,14 +37,12 @@ def Recall(label, pred):
     #         Notice that, if you encounter the divide zero, return 1
     #         [Input]
     #         - label : (N, ), Correct label with 0 (negative) or 1 (positive)
-    #         - hypo  : (N, ), Predicted score between 0 and 1
+    #         - pred  : (N, ), Predicted score between 0 and 1
     #         [output]
     #         - recall : (scalar, float), Computed recall score
     # ========================= EDIT HERE =========================
-    recall = None
-
-
-
+    filt = pred[label == 1]
+    recall = 1 if filt.shape[0] == 0 else (filt[filt == 1].shape[0] / filt.shape[0])
     # =============================================================
     return recall
 
@@ -59,13 +53,14 @@ def F_measure(label, pred):
     #         Notice that, if you encounter the divide zero, return 1
     #         [Input]
     #         - label : (N, ), Correct label with 0 (negative) or 1 (positive)
-    #         - hypo  : (N, ), Predicted score between 0 and 1
+    #         - pred  : (N, ), Predicted score between 0 and 1
     #         [output]
     #         - F_score : (scalar, float), Computed F-score score
     # ========================= EDIT HERE =========================
-    F_score = None
+    prec = Precision(label, pred)
+    recl = Recall(label, pred)
 
-
+    F_score = 1 if prec == 0 and recl == 0 else (2 * prec * recl / (prec + recl))
     # =============================================================
     return F_score
 
@@ -81,9 +76,17 @@ def MAP(label, hypo, at = 10):
     #         [output]
     #         - Map : (scalar, float), Computed MAP score
     # ========================= EDIT HERE =========================
-    Map = None
+    def AP (label, hypo, at):
+        label_s = label[np.argsort(hypo)[::-1]]
+        prec_sum = rel = 0
 
-
+        for i in range(at):
+            rel += label_s[i]
+            prec_sum += rel / (i + 1)
+        
+        return prec_sum / at
+    
+    Map = np.mean([AP(l, h, at) for (l, h) in zip(label, hypo)])
     # =============================================================
     return Map
 
@@ -103,7 +106,7 @@ def nDCG(label, hypo, at = 10):
 
     def DCG(label, hypo, at=10):
         # ========================= EDIT HERE =========================
-        dcg = None
+        dcg = 0
 
 
 
@@ -113,7 +116,7 @@ def nDCG(label, hypo, at = 10):
 
     def IDCG(label, hypo, at=10):
         # ========================= EDIT HERE =========================
-        idcg = None
+        idcg = 0
 
 
 
@@ -121,7 +124,7 @@ def nDCG(label, hypo, at = 10):
         # =============================================================
         return idcg
     # ========================= EDIT HERE =========================
-    ndcg = None
+    ndcg = 0
 
     # =============================================================
     return ndcg
