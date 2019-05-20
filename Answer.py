@@ -101,7 +101,6 @@ class Perceptron:
             if quit:
                 break
 
-
     def batch_train(self, x, y, learning_rate):
         num_data = x.shape[0]
         """
@@ -314,7 +313,9 @@ class InputLayer:
         self.dW = None
         self.db = None
         # =============== EDIT HERE ===============
-
+        back = self.act.backward(d_prev)
+        self.dW = self.x.T @ back.T
+        self.db = back.sum(axis=1)
         # =========================================
 
 class SigmoidOutputLayer:
@@ -365,11 +366,7 @@ class SigmoidOutputLayer:
         eps = 1e-10
         bce_loss = None
         # =============== EDIT HERE ===============
-
-
-
-
-
+        bce_loss = -np.log(np.where(y, y_hat, 1 - y_hat) + eps).mean()
         # =========================================
         return bce_loss
 
@@ -385,8 +382,7 @@ class SigmoidOutputLayer:
         """
         y_hat = None
         # =============== EDIT HERE ===============
-        z = np.matmul(x, self.W) + self.b
-        y_hat = self.sigmoid.forward(z)
+        y_hat = self.sigmoid.forward(x @ self.W + self.b)
         # =========================================
         return y_hat
 
@@ -407,12 +403,10 @@ class SigmoidOutputLayer:
         batch_size = self.y.shape[0]
         dx = None
         # =============== EDIT HERE ===============
-
-
-
-
-
-
+        dz = (self.y_hat - self.y) / batch_size
+        self.dW = self.x.T @ dz
+        self.db = dz.sum(axis=0)
+        dx = dz @ self.W.T
         # =========================================
 
         return dx
@@ -443,11 +437,8 @@ class HiddenLayer:
         self.x = None
         self.out = None
         # =============== EDIT HERE ===============
-
-
-
-
-
+        self.x = x
+        self.out = self.act.forward(x @ self.W + self.b)
         # =========================================
         return self.out
 
@@ -470,13 +461,10 @@ class HiddenLayer:
         self.dW = None
         self.db = None
         # =============== EDIT HERE ===============
-
-
-
-
-
-
-
+        dz = self.act.backward(d_prev)
+        self.dW = self.x.T @ dz
+        self.db = dz.sum(axis=0)
+        dx = dz @ self.W.T
         # =========================================
         return dx
 
@@ -526,12 +514,7 @@ class SoftmaxOutputLayer:
         eps = 1e-10
         ce_loss = None
         # =============== EDIT HERE ===============
-
-
-
-
-
-
+        ce_loss = -(np.log(y_hat + eps) * y).sum(axis=1).mean()
         # =========================================
         return ce_loss
 
@@ -548,10 +531,7 @@ class SoftmaxOutputLayer:
         """
         y_hat = None
         # =============== EDIT HERE ===============
-
-
-
-
+        y_hat = softmax(x @ self.W + self.b)
         # =========================================
         return y_hat
 
@@ -572,12 +552,10 @@ class SoftmaxOutputLayer:
         batch_size = self.y.shape[0]
         dx = None
         # =============== EDIT HERE ===============
-
-
-
-
-
-
+        dz = (self.y_hat - self.y) / batch_size
+        self.dW = self.x.T @ dz
+        self.db = dz.sum(axis=0)
+        dx = dz @ self.W.T
         # =========================================
         return dx
 
