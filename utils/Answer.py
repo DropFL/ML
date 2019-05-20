@@ -77,14 +77,11 @@ def MAP(label, hypo, at = 10):
     #         - Map : (scalar, float), Computed MAP score
     # ========================= EDIT HERE =========================
     def AP (label, hypo, at):
-        label_s = label[np.argsort(hypo)[::-1]]
-        prec_sum = rel = 0
-
-        for i in range(at):
-            rel += label_s[i]
-            prec_sum += rel / (i + 1)
+        label = label[np.argsort(hypo)[::-1]][:at]
+        rel_cum = label.cumsum()
+        prec_sum = (label * rel_cum / np.arange(1, at + 1)).sum()
         
-        return prec_sum / at
+        return prec_sum / rel_cum[-1]
     
     Map = np.mean([AP(l, h, at) for (l, h) in zip(label, hypo)])
     # =============================================================
@@ -106,26 +103,17 @@ def nDCG(label, hypo, at = 10):
 
     def DCG(label, hypo, at=10):
         # ========================= EDIT HERE =========================
-        dcg = 0
-
-
-
-
+        dcg = (label[np.argsort(hypo)[::-1]][:at] / np.log2(np.arange(2, at + 2))).sum()
         # =============================================================
         return dcg
 
     def IDCG(label, hypo, at=10):
         # ========================= EDIT HERE =========================
-        idcg = 0
-
-
-
-
+        idcg = (np.sort(label)[::-1][:at] / np.log2(np.arange(2, at + 2))).sum()
         # =============================================================
         return idcg
     # ========================= EDIT HERE =========================
-    ndcg = 0
-
+    ndcg = np.mean([DCG(l, h, at) / IDCG(l, h, at) for (l, h) in zip(label, hypo)])
     # =============================================================
     return ndcg
 
