@@ -314,8 +314,8 @@ class InputLayer:
         self.db = None
         # =============== EDIT HERE ===============
         back = self.act.backward(d_prev)
-        self.dW = self.x.T @ back.T
-        self.db = back.sum(axis=1)
+        self.dW = self.x.T @ back
+        self.db = back.sum(axis=0)
         # =========================================
 
 class SigmoidOutputLayer:
