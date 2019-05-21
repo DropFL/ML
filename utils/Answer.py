@@ -77,11 +77,9 @@ def MAP(label, hypo, at = 10):
     #         - Map : (scalar, float), Computed MAP score
     # ========================= EDIT HERE =========================
     def AP (label, hypo, at):
-        label = label[np.argsort(hypo)[::-1]][:at]
-        rel_cum = label.cumsum()
-        prec_sum = (label * rel_cum / np.arange(1, at + 1)).sum()
-        
-        return prec_sum / rel_cum[-1]
+        label = label[np.argsort(hypo)[::-1]]
+        label_c = label.cumsum()
+        return ((label * label_c)[:at] / np.arange(1, at + 1)).sum() / label_c[-1]
     
     Map = np.mean([AP(l, h, at) for (l, h) in zip(label, hypo)])
     # =============================================================
