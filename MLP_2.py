@@ -1,5 +1,4 @@
 import numpy as np
-import sys
 import matplotlib.pyplot as plt
 from Answer import ReLU, InputLayer, HiddenLayer, SoftmaxOutputLayer
 from utils import load_fashion_mnist
@@ -46,11 +45,10 @@ class MLP:
 
 
 # =============== EDIT HERE ===============
-hidden_1 = int(sys.argv[1])
-hidden_2 = int(sys.argv[2])
-print(hidden_1, hidden_2)
-num_epochs = 100
-learning_rate = 0.1
+hidden_1 = 8
+hidden_2 = 10
+num_epochs = 10000
+learning_rate = 0.001
 print_every = 100
 # =========================================
 
@@ -102,10 +100,10 @@ for i in range(1, num_epochs + 1):
         print('Test Accuracy = %.3f' % te_acc)
 
 x_axis = list(range(len(test_acc)))
-# plt.plot(x_axis, train_acc, 'b-', label='Train Acc.')
-# plt.plot(x_axis, test_acc, 'r-', label='Test Acc.')
-# plt.title('Train & Test Accuracy')
-# plt.xlabel('Epochs')
-# plt.ylabel('Accuracy')
-# plt.legend()
-# plt.show()
+plt.plot(x_axis, train_acc, 'b-', label='Train Acc.')
+plt.plot(x_axis, test_acc, 'r-', label='Test Acc.')
+plt.title('Train & Test Accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
