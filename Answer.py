@@ -36,16 +36,14 @@ def convolution2d(x, kernel, stride):
     kernel_size = kernel.shape[0]
     conv_out = None
     # =============================== EDIT HERE ===============================
-
-
-
-
-
-
-
-
-
-
+    conv_h = (height - kernel_size) // stride + 1
+    conv_w = (width - kernel_size) // stride + 1
+    sub = lambda x, i, j: x[i*stride : i*stride + kernel_size,
+                            j*stride : j*stride + kernel_size ]
+    
+    conv_out = np.array([[ (kernel * sub(x, i, j)).sum() # single value
+                           for j in range(conv_w)]       # extend to 1D (Conv_Width)
+                           for i in range(conv_h)])      # extend to 2D (Conv_Height x ...)
     # =========================================================================
     return conv_out
 
@@ -78,16 +76,8 @@ class ReLU:
         """
         out = None
         # =============================== EDIT HERE ===============================
-
-
-
-
-
-
-
-
-
-
+        self.zero_mask = np.where(z > 0, 1, 0)
+        out = np.where(self.zero_mask == 1, z, 0)
         # =========================================================================
         return out
 
@@ -107,14 +97,7 @@ class ReLU:
         """
         dz = None
         # =============================== EDIT HERE ===============================
-
-
-
-
-
-
-
-
+        dz = self.zero_mask * d_prev
         # =========================================================================
         return dz
 
@@ -167,7 +150,7 @@ class ConvolutionLayer:
 
         [Output]
         conv_out : convolution result
-        - Shape : (Conv_Height, Conv_Width)
+        - Shape : (Batch size, Out Channel, Conv_Height, Conv_Width)
         - Conv_Height & Conv_Width can be calculated using 'Height', 'Width', 'Kernel size', 'Stride'
 
         이 부분은 구현이 필요없습니다.
@@ -207,7 +190,7 @@ class ConvolutionLayer:
 
         [Output]
         conv_out : convolution result
-        - Shape : (Conv_Height, Conv_Width)
+        - Shape : (Batch size, Out Channel, Conv_Height, Conv_Width)
         - Conv_Height & Conv_Width can be calculated using 'Height', 'Width', 'Kernel size', 'Stride'
         """
         batch_size, in_channel, _, _ = x.shape
@@ -221,16 +204,13 @@ class ConvolutionLayer:
 
         conv = None
         # =============================== EDIT HERE ===============================
-
-
-
-
-
-
-
-
-
-
+        conv = np.array([[
+            np.sum([
+                convolution2d(one_x, one_k, stride) + one_b # convolved 2D (Conv_Height x Conv_Width)
+                for one_x, one_k in zip(sub_x, sub_k)],     # extend to 3D (In Channel  x ...)
+            axis=0)                                         # reduce to 2D (Conv_Height x ...)
+            for sub_k, one_b in zip(kernel, bias)]          # extend to 3D (Out Channel x ...)
+            for sub_x in x])                                # extend to 4D (Batch size  x ...)
         # =========================================================================
         return conv
 
@@ -266,22 +246,13 @@ class ConvolutionLayer:
         self.db = np.zeros_like(self.b, dtype=np.float64)
         dx = np.zeros_like(self.x, dtype=np.float64)
         # =============================== EDIT HERE ===============================
-
+        # TODO
         # dW
-
-
-
-
+        # TODO
         # db
-
-
-
-
+        # TODO
         # dx
-
-
-
-
+        # TODO
         # =========================================================================
         return dx
 
@@ -306,14 +277,10 @@ class ConvolutionLayer:
         padded_x = None
         batch_size, in_channel, height, width = x.shape
         # =============================== EDIT HERE ===============================
+        #          batch  channel  height  width
+        pad_tup = (0,     0,       pad,    pad  )
 
-
-
-
-
-
-
-
+        padded_x = np.pad(x, pad_tup, 'constant', constant_values = 0)
         # =========================================================================
         return padded_x
 
@@ -367,7 +334,7 @@ class MaxPoolingLayer:
 
         [Output]
         pool_out : max_pool result
-        - Shape : (Pool_Height, Pool_Width)
+        - Shape : (Batch size, Out Channel, Pool_Height, Pool_Width)
         - Pool_Height & Pool_Width can be calculated using 'Height', 'Width', 'Kernel size', 'Stride'
         """
         max_pool = None
@@ -376,19 +343,28 @@ class MaxPoolingLayer:
         # Might be useful when backward
         self.mask = np.zeros_like(x)
         # =============================== EDIT HERE ===============================
-
-
-
-
-
-
-
-
-
-
-
-
-
+        pool_h = (height - self.kernel_size) // self.stride + 1
+        pool_w = (width - self.kernel_size) // self.stride + 1
+        sub = lambda x, i, j: x[i : i+self.kernel_size, j : j+self.kernel_size]
+        
+        max_pool = np.zeros((batch_size, channel, pool_h, pool_w))
+                                                    
+        for b in range(batch_size):         # reduce 4D -> 3D  (unroll batch)
+            for c in range(channel):        # reduce 3D -> 2D  (unroll channel)
+                # single input
+                one_x = x[b, c]
+                for i in range(pool_h):     # reduce 2D -> 1D  (unroll height)
+                    for j in range(pool_w): # reduce 1D -> val (unroll width)
+                        # position of most upperleft element
+                        _x, _y = i*self.stride, j*self.stride
+                        # single kernel for pooling
+                        kernel = sub(one_x, _x, _y)
+                        # extract maximal value
+                        max_x, max_y = np.unravel_index(kernel.argmax(), kernel.shape)
+                        # save its location and value
+                        self.mask[b, c, _x+max_x, _y+max_y] = 1
+                        max_pool[b, c, i, j] = kernel[max_x, max_y]
+        
         # =========================================================================
         self.output_shape = max_pool.shape
         return max_pool
@@ -415,15 +391,7 @@ class MaxPoolingLayer:
             d_prev = d_prev.reshape(*self.output_shape)
         batch, channel, height, width = d_prev.shape
         # =============================== EDIT HERE ===============================
-
-
-
-
-
-
-
-
-
+        # TODO
         # =========================================================================
         return d_max
 
@@ -477,13 +445,7 @@ class FCLayer:
             x = x.reshape(batch_size, -1)
         self.x = x
         # =============================== EDIT HERE ===============================
-
-
-
-
-
-
-
+        self.out = self.x @ self.W + self.b
         # =========================================================================
         return self.out
 
@@ -503,17 +465,7 @@ class FCLayer:
         self.db = np.zeros_like(self.b, dtype=np.float64)   # Gradient w.r.t. bias (self.b)
         dx = np.zeros_like(self.x, dtype=np.float64)        # Gradient w.r.t. input x
         # =============================== EDIT HERE ===============================
-
-
-
-
-
-
-
-
-
-
-
+        # TODO
         # =========================================================================
         return dx
 
@@ -569,13 +521,9 @@ class SoftmaxLayer:
         - Shape: (N, C)
 
         """
-        y_hat = None
+        self.y_hat = None
         # =============================== EDIT HERE ===============================
-
-
-
-
-
+        self.y_hat = softmax(x)
         # =========================================================================
         return self.y_hat
 
@@ -596,11 +544,7 @@ class SoftmaxLayer:
         batch_size = self.y.shape[0]
         dx = None
         # =============================== EDIT HERE ===============================
-
-
-
-
-
+        dx = (self.y_hat - self.y) / batch_size
         # =========================================================================
         return dx
 
@@ -631,16 +575,7 @@ class SoftmaxLayer:
         self.y_hat = y_hat
         self.y = y
         # =============================== EDIT HERE ===============================
-
-
-
-
-
-
-
-
-
-
+        self.loss = -np.log(y_hat[np.argmax(y, axis=1)[:, None]] + eps).mean()
         # =========================================================================
         return self.loss
 

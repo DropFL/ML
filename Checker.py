@@ -53,7 +53,7 @@ puppy = mpimg.imread('./img/puppy.jpg')
 
 # Convert image to gray scale (2D)
 gray_puppy = Image.fromarray(puppy).convert('L').resize((img_size, img_size))
-gray_puppy = np.array(gray_puppy)
+gray_puppy = np.array(gray_puppy, dtype=np.float32)
 
 # Kernel 1. Edge detection
 kernel_1 = np.array([[-1, -1, -1],
@@ -98,8 +98,8 @@ Backward:
  [-10   0 -30]
 """
 relu = ReLU()
-temp2 = np.array([1, -0.1, 3])
-temp3 = np.array([-10, -20, -30])
+temp2 = np.array([1, -0.1, 3], dtype=np.float32)
+temp3 = np.array([-10, -20, -30], dtype=np.float32)
 print('ReLU Check')
 print('Forward: \n', relu.forward(temp2))
 print('Backward: \n', relu.backward(temp3))
@@ -143,6 +143,12 @@ print()
 conv_dx = conv_layer.backward(conv_out)
 conv_dW = conv_layer.dW
 conv_db = conv_layer.db
+
+print('Convolution Layer Backward Check')
+print('dx Difference : ', (conv_dx - correct_conv_dx).sum())
+print('dW Difference : ', (conv_dW - correct_conv_dW).sum())
+print('db Difference : ', (conv_db - correct_conv_db).sum())
+print()
 # ===========================================================================
 
 
@@ -243,19 +249,19 @@ print()
 
 
 print('============================= 7. CNN Classifier ===========================')
-img_size = 16
+img_size = 8
 output_dim = 2
 learning_rate = 0.01
 
 puppy = mpimg.imread('./img/puppy.jpg')
 # Convert image to gray scale (2D)
 gray_puppy = Image.fromarray(puppy).convert('L').resize((img_size, img_size))
-gray_puppy = np.array(gray_puppy)
+gray_puppy = np.array(gray_puppy, dtype=np.float32)
 
 kitten = mpimg.imread('./img/kitten.jpg')
 # Convert image to gray scale (2D)
 gray_kitten = Image.fromarray(kitten).convert('L').resize((img_size, img_size))
-gray_kitten = np.array(gray_kitten)
+gray_kitten = np.array(gray_kitten, dtype=np.float32)
 
 
 sample_x = np.zeros((2, 1, img_size, img_size))
@@ -273,7 +279,7 @@ CNN.add_layer('ReLU - 1', ReLU())
 CNN.add_layer('Conv - 2', ConvolutionLayer(in_channels=3, out_channels=3, kernel_size=2, stride=1, pad=0))
 CNN.add_layer('ReLU - 2', ReLU())
 CNN.add_layer('Max-Pool', MaxPoolingLayer(kernel_size=2, stride=2))
-CNN.add_layer('FC - 1', FCLayer(147, 2))
+CNN.add_layer('FC - 1', FCLayer(27, 2))
 CNN.add_layer('Softmax Layer', SoftmaxLayer())
 
 loss = CNN.forward(sample_x, sample_y)
@@ -283,16 +289,14 @@ CNN.update(learning_rate=learning_rate)
 
 correct_loss = 11.51292546492023
 
-correct_fc_dW = CNN.layers['FC - 1'].dW
-correct_fc_db = CNN.layers['FC - 1'].db
-
-correct_conv1_dW = CNN.layers['Conv - 1'].dW
-correct_conv1_db = CNN.layers['Conv - 1'].db
-
+# Should be zero
 print('Loss difference: ', correct_loss - loss)
-print('FC - 1 dW, db difference: ',
-      (correct_fc_dW - CNN.layers['FC - 1'].dW).sum(), '/', (correct_fc_db - CNN.layers['FC - 1'].db).sum())
 
+# Should be zero
+print('FC - 1 dW, db difference: ',
+      (correct_cnn_fc_dW - CNN.layers['FC - 1'].dW).sum(), '/', (correct_cnn_fc_db - CNN.layers['FC - 1'].db).sum())
+
+# Should be different in the order of 1e-9
 print('Conv - 1 dW, db difference: ',
-      (correct_conv1_dW - CNN.layers['Conv - 1'].dW).sum(), '/', (correct_conv1_db - CNN.layers['Conv - 1'].db).sum())
+      (correct_cnn_conv1_dW - CNN.layers['Conv - 1'].dW).sum(), '/', (correct_cnn_conv1_db - CNN.layers['Conv - 1'].db).sum())
 # ===========================================================================
