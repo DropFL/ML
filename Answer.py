@@ -42,8 +42,8 @@ def convolution2d(x, kernel, stride):
                             j*stride : j*stride + kernel_size ]
     
     conv_out = np.array([[ (kernel * sub(x, i, j)).sum() # single value
-                           for j in range(conv_w)]       # extend to 1D (Conv_Width)
-                           for i in range(conv_h)])      # extend to 2D (Conv_Height x ...)
+                           for j in range(conv_w)]       # extend to 1D (W_c)
+                           for i in range(conv_h)])      # extend to 2D (H_c x W_c)
     # =========================================================================
     return conv_out
 
@@ -204,13 +204,15 @@ class ConvolutionLayer:
 
         conv = None
         # =============================== EDIT HERE ===============================
+        if bias is None:
+            bias = np.zeros(out_channel)
         conv = np.array([[
             np.sum([
-                convolution2d(one_x, one_k, stride) + one_b # convolved 2D (Conv_Height x Conv_Width)
-                for one_x, one_k in zip(sub_x, sub_k)],     # extend to 3D (In Channel  x ...)
-            axis=0)                                         # reduce to 2D (Conv_Height x ...)
-            for sub_k, one_b in zip(kernel, bias)]          # extend to 3D (Out Channel x ...)
-            for sub_x in x])                                # extend to 4D (Batch size  x ...)
+                convolution2d(one_x, one_k, stride) + one_b # convolved 2D (H_c x H_w)
+                for one_x, one_k in zip(sub_x, sub_k)],     # extend to 3D (in  x ...)
+            axis=0)                                         # reduce to 2D (H_c x ...)
+            for sub_k, one_b in zip(kernel, bias)]          # extend to 3D (out x ...)
+            for sub_x in x])                                # extend to 4D (N   x ...)
         # =========================================================================
         return conv
 
@@ -246,13 +248,30 @@ class ConvolutionLayer:
         self.db = np.zeros_like(self.b, dtype=np.float64)
         dx = np.zeros_like(self.x, dtype=np.float64)
         # =============================== EDIT HERE ===============================
-        # TODO
-        # dW
-        # TODO
-        # db
-        # TODO
-        # dx
-        # TODO
+        _, _, conv_h, conv_w = d_prev.shape
+        sub = lambda x, i, j: x[i : i + conv_h*self.stride : self.stride,
+                                j : j + conv_w*self.stride : self.stride]
+        
+        # zero-padded d_prev
+        d_pad = np.zeros((batch_size, out_channel,
+                          self.stride * (conv_h-1) + 1,
+                          self.stride * (conv_w-1) + 1 )
+                         , dtype=np.float64)
+        d_pad[:, :, ::self.stride, ::self.stride] = d_prev
+
+        # reversed self.W
+        W_rev = np.swapaxes(self.W[:,:,::-1,::-1], 0, 1)
+
+        dx = self.convolution(d_pad, W_rev, pad=kernel_size-1)
+        self.dW = np.sum([[[[[
+                      (one_dp * sub(one_x, h, w)).sum() # single value
+                      for w in range(kernel_size)]      # extended to 1D (K)
+                      for h in range(kernel_size)]      # extended to 2D (K, K)
+                      for one_x in self.x[b]]           # extended to 3D (in,  ...)
+                      for one_dp in d_prev[b]]          # extended to 4D (out, ...)
+                      for b in range(batch_size)]       # extended to 5D (N,   ...)
+                      , axis=0)                         # reduced  to 4D (out, ...)
+        self.db = d_prev.sum(axis=(0, 2, 3))
         # =========================================================================
         return dx
 
@@ -278,9 +297,9 @@ class ConvolutionLayer:
         batch_size, in_channel, height, width = x.shape
         # =============================== EDIT HERE ===============================
         #          batch  channel  height  width
-        pad_tup = (0,     0,       pad,    pad  )
+        pad_tup = ((0,),  (0,),    (pad,), (pad,))
 
-        padded_x = np.pad(x, pad_tup, 'constant', constant_values = 0)
+        padded_x = np.pad(x, pad_tup, 'constant', constant_values=0)
         # =========================================================================
         return padded_x
 
@@ -344,7 +363,7 @@ class MaxPoolingLayer:
         self.mask = np.zeros_like(x)
         # =============================== EDIT HERE ===============================
         pool_h = (height - self.kernel_size) // self.stride + 1
-        pool_w = (width - self.kernel_size) // self.stride + 1
+        pool_w = (width  - self.kernel_size) // self.stride + 1
         sub = lambda x, i, j: x[i : i+self.kernel_size, j : j+self.kernel_size]
         
         max_pool = np.zeros((batch_size, channel, pool_h, pool_w))
@@ -369,7 +388,6 @@ class MaxPoolingLayer:
         self.output_shape = max_pool.shape
         return max_pool
 
-
     def backward(self, d_prev=1):
         """
         Max-Pooling Layer Backward.
@@ -391,7 +409,23 @@ class MaxPoolingLayer:
             d_prev = d_prev.reshape(*self.output_shape)
         batch, channel, height, width = d_prev.shape
         # =============================== EDIT HERE ===============================
-        # TODO
+        d_max = np.zeros_like(self.mask)
+        K = self.kernel_size
+        sub = lambda x, i, j: x[i : i + K, j : j + K]
+
+        for b in range(batch):
+            for c in range(channel):
+                one_dp = d_prev[b, c]
+                one_mask = self.mask[b, c]
+                one_max = d_max[b, c]
+                for h in range(height):
+                    for w in range(width):
+                        _h = h * self.stride
+                        _w = w * self.stride
+                        sub_mask = sub(one_mask, _h, _w)
+                        idx = np.unravel_index(sub_mask.argmax(), (K, K))
+
+                        one_max[idx[0] + _h, idx[1] + _w] = one_dp[h, w]
         # =========================================================================
         return d_max
 
@@ -465,7 +499,9 @@ class FCLayer:
         self.db = np.zeros_like(self.b, dtype=np.float64)   # Gradient w.r.t. bias (self.b)
         dx = np.zeros_like(self.x, dtype=np.float64)        # Gradient w.r.t. input x
         # =============================== EDIT HERE ===============================
-        # TODO
+        self.dW = self.x.T @ d_prev
+        self.db = d_prev.sum(axis=0)
+        dx = d_prev @ self.W.T
         # =========================================================================
         return dx
 
@@ -575,7 +611,7 @@ class SoftmaxLayer:
         self.y_hat = y_hat
         self.y = y
         # =============================== EDIT HERE ===============================
-        self.loss = -np.log(y_hat[np.argmax(y, axis=1)[:, None]] + eps).mean()
+        self.loss = (-np.log(y_hat + eps) * y).sum(axis=1).mean()
         # =========================================================================
         return self.loss
 
