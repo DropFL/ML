@@ -14,48 +14,21 @@ num_class = y_train.shape[1]
 CNN = CNN_Classifier()
 
 # =============================== EDIT HERE ===============================
-###########################################################################
-#                                                                         #
-#   Build CNN Architecture and do experiment.                             #
-#   You can add layer as below examples.                                  #
-#   NOTE THAT, layers are executed in the order that you add.             #
-#   It might take more than 5 minutes for an epoch.                       #
-#   Enjoy.                                                                #
-#                                                                         #
-#   CNN 모델을 구성하고 실험하세요                                             #
-#   레이어는 아래 예제와 같이 추가할 수 있습니다.                                 #
-#   주의하세요! 레이어들은 추가한 순서대로 실행됩니다.                             #
-#   Layer에 따라, 구현에 따라 다르지만 1 Epoch에 5분 이상 걸려도 정상입니다.        #
-#   ^^                                                                    #
-#                                                                         #
-###########################################################################
 
-# Add Layers, Layer 추가 예제
-# 아래 예시를 참고하여 과제에 주어진 대로 (혹은 과제와 별개로 원하는 대로) Layer를 추가하세요.
-
-# Convolution Layer
-CNN.add_layer('Conv Example Layer', ConvolutionLayer(in_channels=in_channnel, out_channels=16, kernel_size=5, pad=1))
-
-# ReLU Layer
-CNN.add_layer('ReLU Example Layer', ReLU())
-
-# Max-pool Layer
-CNN.add_layer('Max-Pool Example Layer', MaxPoolingLayer(kernel_size=3, stride=3))
-
-# FC Layer
-CNN.add_layer('FC Example Layer', FCLayer(input_dim=1234, output_dim=123))
-
-# Softmax Layer
-# 이 layer는 항상 마지막에 추가
+CNN.add_layer('Conv Layer 1', ConvolutionLayer(in_channels=in_channnel, out_channels=8, kernel_size=3, pad=1))
+CNN.add_layer('ReLU Layer 1', ReLU())
+CNN.add_layer('Conv Layer 2', ConvolutionLayer(in_channels=8, out_channels=8, kernel_size=3, pad=1))
+CNN.add_layer('ReLU Layer 2', ReLU())
+CNN.add_layer('Max-Pool Layer', MaxPoolingLayer(kernel_size=2, stride=2))
+CNN.add_layer('FC Layer 1', FCLayer(input_dim=1568, output_dim=500))
+CNN.add_layer('FC Layer 2', FCLayer(input_dim=500, output_dim=5))
 CNN.add_layer('Softmax Layer', SoftmaxLayer())
 
-# Model Architecture 출력
 CNN.summary()
 
-# Hyper-parameters
-num_epochs = None
-learning_rate = None
-print_every = None
+num_epochs = 100
+learning_rate = 0.001
+print_every = 1
 
 # =========================================================================
 
@@ -136,14 +109,13 @@ print('Best acc : %.2f at epoch %d' % (best_acc, best_epoch))
 #                                                                         #
 ###########################################################################
 
-
-
-
-
-
-
-
-
+_x = list(range(len(test_accuracy)))
+plt.plot(_x, train_accuracy, 'b-', label='Train Accuracy')
+plt.plot(_x, test_accuracy , 'r-', label='Test Accuracy' )
+plt.title('Accuracy Plot')
+plt.xlabel('Epoch (recorded every %d)' % print_every)
+plt.ylabel('Accuracy')
+plt.legend()
 
 # =========================================================================
 plt.show()

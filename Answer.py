@@ -259,19 +259,26 @@ class ConvolutionLayer:
                          , dtype=np.float64)
         d_pad[:, :, ::self.stride, ::self.stride] = d_prev
 
+        # zero-padded self.x (NOT PADDED ON SAVE)
+        x_pad = self.zero_pad(self.x, self.pad)
+
         # reversed self.W
         W_rev = np.swapaxes(self.W[:,:,::-1,::-1], 0, 1)
 
-        dx = self.convolution(d_pad, W_rev, pad=kernel_size-1)
+        # self.dW and self.db
         self.dW = np.sum([[[[[
                       (one_dp * sub(one_x, h, w)).sum() # single value
                       for w in range(kernel_size)]      # extended to 1D (K)
                       for h in range(kernel_size)]      # extended to 2D (K, K)
-                      for one_x in self.x[b]]           # extended to 3D (in,  ...)
+                      for one_x in x_pad[b]]            # extended to 3D (in,  ...)
                       for one_dp in d_prev[b]]          # extended to 4D (out, ...)
                       for b in range(batch_size)]       # extended to 5D (N,   ...)
                       , axis=0)                         # reduced  to 4D (out, ...)
         self.db = d_prev.sum(axis=(0, 2, 3))
+
+        # dx (NEED TO TRIM PADDED AREA)
+        dx = self.convolution(d_pad, W_rev, pad=kernel_size-1)
+        dx = dx[:, :, self.pad:-self.pad, self.pad:-self.pad]
         # =========================================================================
         return dx
 
