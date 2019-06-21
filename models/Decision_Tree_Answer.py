@@ -1,5 +1,8 @@
 from utils.utils_Answer import impurity_func, Finding_split_point
 import numpy as np
+import warnings
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 Heart_Category_feature_idx = [1, 2, 5, 6, 8, 10, 11, 12]
 Carseats_Category_feature_idx = [6, 9]
@@ -86,7 +89,7 @@ class Decision_Tree():
         자식 노드에 대해 재귀적 호출
         """
         for key in node.child:
-            self.branch_name = Best_feature + ' (' + str(key) + ')'
+            self.branch_name = Best_feature + '(' + str(key) + ')'
             self.Generate_tree(node.child[key])
 
     def Find_Best_Feature(self, df):
@@ -145,7 +148,7 @@ class Decision_Tree():
                 split_value = Finding_split_point(df, h, self.criterion)
                 impurity = 0
         #=====================================================
-            impurity_list.append([h, np.round(impurity, 6)])
+            impurity_list.append(np.round(impurity, 6))
 
         idx = np.argmin(impurity_list)
         Best_feature = input_feature[idx]
@@ -186,17 +189,20 @@ class Decision_Tree():
         col_data = df[Best_feature]
         node.split_feature = Best_feature
 
-        print('Best_Feature: ', Best_feature)
+        print('\nBest_Feature: ', Best_feature)
 
         if feature_type == 'Category':
             distinct_data = np.unique(col_data)
 
             for i, d in enumerate(distinct_data):
-                print('\t' * node.depth, 'parent: ', self.branch_name, '\tDepth:', node.depth, '\t', i, 'th branch: ',
-                      d)
+                #### 수정된 부분  ####
+                if type(d) == np.float64 or type(d) == np.float32:
+                    d = int(d)
+                print('\t' * node.depth, 'parent: ', self.branch_name, '\tDepth:', node.depth, '\t', i, 'th branch: ',d)
                 child_df = df[(col_data == d)]
                 child_node = Node(child_df, self.criterion, node.depth + 1, '%s = %s' % (Best_feature, d))
-                node.child[d] = child_node
+                ### 추가 수정된 부분 (19-06-21) ###
+                node.child['%s' % d] = child_node
 
         elif feature_type == 'Numeric':
             split_value = Finding_split_point(df, Best_feature, self.criterion)
@@ -211,8 +217,6 @@ class Decision_Tree():
                 child_node = Node(child_df, self.criterion, node.depth + 1,
                                   '%s %s %s' % (Best_feature, inequal_symbol, split_value))
                 node.child['%s %.1f' % (inequal_symbol, split_value)] = child_node
-        print()
-
         return
 
     # You don't need to touch
@@ -234,8 +238,7 @@ class Decision_Tree():
         node.is_leaf = True
         node.label = (np.sum(Y == 'Yes') > np.sum(Y == 'No')) and 'Yes' or 'No'
 
-        print('\t' * node.depth, 'Leaf node \t Depth: ', node.depth, 'Label: ', node.label)
-
+        print('\t' * node.depth, 'parent: ', self.branch_name, '\t ', 'Leaf node \t Depth: ', node.depth, '\tLabel: ', node.label)
         return
 #==============================================================================================================
 
@@ -260,11 +263,19 @@ class Decision_Tree():
 
             if feature_idx in self.Category_feature_idx:
                 key = tuple[f]
+                if type(key) == np.float64 or type(key) == np.float32:
+                    key = str(int(key))
             else:
                 for keys in cur_node.child.keys():
                     split_value = float(keys.split(' ')[1])
                     key = (tuple[f] < split_value) and '< %.1f' % ((split_value)) or '>= %.1f' % ((split_value))
-            cur_node = cur_node.child[key]
+
+            #### 수정된 부분  ####
+            try:
+                cur_node = cur_node.child[key]
+            except KeyError:
+                cur_node.label = 'Yes'
+                break
 
         return cur_node.label
 #==============================================================================================================
