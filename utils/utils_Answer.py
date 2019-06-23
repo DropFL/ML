@@ -59,6 +59,6 @@ def Gaussian_prob(x, mean, std):
     ret = 0
     # ========      Edit here         =========
     z = (x - mean) / std
-    ret = np.exp(-z/2) / (std * np.sqrt(2 * np.pi))
+    ret = np.exp(z ** 2 / -2) / (std * np.sqrt(2 * np.pi))
     # =========================================
     return ret
