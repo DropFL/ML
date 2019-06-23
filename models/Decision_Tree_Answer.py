@@ -22,7 +22,6 @@ class Node():
 
 
 class Decision_Tree():
-
     def __init__(self, criterion, max_depth=5):
 
         self.criterion = criterion
@@ -139,14 +138,17 @@ class Decision_Tree():
         # for all features in DataFrame,
         for idx, h in enumerate(input_feature):
         # ============       Edit here      ==================
-            # Category Feature Case
+            num = df[h].values.shape[0]
+            impurity = 0
             if idx in self.Category_feature_idx:
-                impurity = 0
-
-            # Numeric Feature Case
+                for key, cnt in zip(*np.unique(df[h].values, return_counts=True)):
+                    impurity += impurity_func(Y_data[df[h].values == key], self.criterion) * cnt / num
             else:
                 split_value = Finding_split_point(df, h, self.criterion)
-                impurity = 0
+                split = df[h].values < split_value
+                num_T, num_F = split.sum(), (~split).sum()
+                impurity += impurity_func(Y_data[split], self.criterion) * num_T / num
+                impurity += impurity_func(Y_data[~split], self.criterion) * num_F / num
         #=====================================================
             impurity_list.append(np.round(impurity, 6))
 
@@ -189,7 +191,7 @@ class Decision_Tree():
         col_data = df[Best_feature]
         node.split_feature = Best_feature
 
-        print('\nBest_Feature: ', Best_feature)
+        # print('\nBest_Feature: ', Best_feature)
 
         if feature_type == 'Category':
             distinct_data = np.unique(col_data)
@@ -198,7 +200,7 @@ class Decision_Tree():
                 #### 수정된 부분  ####
                 if type(d) == np.float64 or type(d) == np.float32:
                     d = int(d)
-                print('\t' * node.depth, 'parent: ', self.branch_name, '\tDepth:', node.depth, '\t', i, 'th branch: ',d)
+                # print('\t' * node.depth, 'parent: ', self.branch_name, '\tDepth:', node.depth, '\t', i, 'th branch: ',d)
                 child_df = df[(col_data == d)]
                 child_node = Node(child_df, self.criterion, node.depth + 1, '%s = %s' % (Best_feature, d))
                 ### 추가 수정된 부분 (19-06-21) ###
@@ -209,8 +211,8 @@ class Decision_Tree():
             less_idx = (col_data < split_value)
             idx_set = [less_idx, ~less_idx]
 
-            print('\t' * node.depth, 'parent: ', self.branch_name, '\tDepth: ', node.depth, '\tsplit point: ',
-                  split_value)
+            # print('\t' * node.depth, 'parent: ', self.branch_name, '\tDepth: ', node.depth, '\tsplit point: ',
+            #       split_value)
             for i, idx in enumerate(idx_set):
                 child_df = df[idx]
                 inequal_symbol = (i == 0) and '<' or '>='
@@ -236,9 +238,9 @@ class Decision_Tree():
         Y = df[output_feature].values
 
         node.is_leaf = True
-        node.label = (np.sum(Y == 'Yes') > np.sum(Y == 'No')) and 'Yes' or 'No'
+        node.label = (np.sum(np.logical_or(Y == 'Yes', Y == 'yes')) > np.sum(np.logical_or(Y == 'No', Y == 'no'))) and 'Yes' or 'No'
 
-        print('\t' * node.depth, 'parent: ', self.branch_name, '\t ', 'Leaf node \t Depth: ', node.depth, '\tLabel: ', node.label)
+        # print('\t' * node.depth, 'parent: ', self.branch_name, '\t ', 'Leaf node \t Depth: ', node.depth, '\tLabel: ', node.label)
         return
 #==============================================================================================================
 

@@ -3,19 +3,15 @@ import numpy as np
 def Gini_index(Y_data):
     gini = 0
     #=========    Edit here    ==========
-    #
-    #
-    #
+    gini = 1 - np.sum([(count / len(Y_data)) ** 2 for _, count in zip(*np.unique(Y_data, return_counts=True))])
     #====================================
     return gini
 
 def Entropy(Y_data):
-
     entropy = 0
     # =====    Edit here    ========
-    #
-    #
-    #
+    arr = np.array([(count / len(Y_data)) for _, count in zip(*np.unique(Y_data, return_counts=True))])
+    entropy = -(arr * np.log2(arr)).sum()
     # ==============================
     return entropy
 
@@ -61,7 +57,8 @@ def Gaussian_prob(x, mean, std):
     :return: probaility (X) ~ N(μ, σ^2)
     '''
     ret = 0
-    # ========      Edit here         ==========
-
+    # ========      Edit here         =========
+    z = (x - mean) / std
+    ret = np.exp(-z/2) / (std * np.sqrt(2 * np.pi))
     # =========================================
     return ret

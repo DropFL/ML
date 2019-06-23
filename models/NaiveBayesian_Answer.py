@@ -35,8 +35,8 @@ class Gaussian_NaiveBayesian():
 
     # P(Yes), P(No)
       # ======     Edit this    ======
-        self.prob_yes = 0
-        self.prob_no = 0
+        self.prob_yes = len(pos_data) / len(Y_data)
+        self.prob_no = len(neg_data) / len(Y_data)
       # ==============================
 
     # P(X | Yes), P(X | No)
@@ -119,11 +119,10 @@ class Gaussian_NaiveBayesian():
                   # to avoid key Error in predict fuction.
                     if type(attr) == np.float64 or type(attr) == np.float32:
                         attr = str(int(attr))
-                    # likelihood['%s = %s' %(feature_name, value)] = ?
+                    likelihood['%s = %s' %(f, attr)] = round((cnt + 1) / (n + len(attribute)), 6)
             else:
-                pass
-                # likelihood['%s_mean' %(feature_name)] =  ?
-                # likelihood['%s_std' %(feature_name)] =  ?
+                likelihood['%s_mean' %(f)] = np.mean(column_data)
+                likelihood['%s_std' %(f)] = np.std(column_data)
         # ================================================
         return
 

@@ -37,8 +37,8 @@ def main():
     Gini_y = 0.357778
     entropy_y = 0.783777
 
-    print('Gini: \t\t', Gini_y , '\tYour: ', round(Gini_index(Y_data), 6))
-    print('Entropy: \t', entropy_y, '\tYour: ', round(Entropy(Y_data), 6))
+    print('Gini: \t\t', Gini_y , '\tYour: ', round(Gini_index(y), 6))
+    print('Entropy: \t', entropy_y, '\tYour: ', round(Entropy(y), 6))
 
     print('\n[Naive Bayesian validation]\n')
     yes_idx = (Y_data == 'yes')
